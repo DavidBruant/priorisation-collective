@@ -1,8 +1,27 @@
 <script>
-	export let name;
+	import Priorisation from './components/Priorisation.svelte'
+	import PriorizedList from './components/PriorizedList.svelte'
+
+	export let priorizedList;
+	export let priorisationByPerson;
+
+	function changePriorisation(name, {detail: newPriorisation}){
+		priorisationByPerson.set(name, newPriorisation)
+		priorisationByPerson = priorisationByPerson // re-render
+	}
 </script>
 
-<h2>Hello {name}! 🧝🏿</h2>
+<h1>Priorisation collective - vue omnisciente</h1>
+<section class="omni">
+	<PriorizedList {priorizedList} />
+
+	<section>
+		<h2>Priorisation par personne</h2>
+		{#each [...priorisationByPerson] as [name, priorisation]}
+			<Priorisation {name} {priorisation} on:priorisation-change={newPrio => changePriorisation(name, newPrio)}/>
+		{/each}
+	</section>
+</section>
 
 <style lang="scss">
 	
@@ -16,12 +35,11 @@
 			max-width: none;
 		}
 	}
-
-	h2 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
 	
+	.omni{
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
 </style>
