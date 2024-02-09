@@ -59,7 +59,7 @@
     <h3>{name}</h3>
 
     <ol>
-        {#each priorisation as item}
+        {#each priorisation as item (item)}
         <li>
             <span>{item.text}</span>
             <span class="weight">
