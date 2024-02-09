@@ -1,23 +1,55 @@
 <script>
+    import compareItems from '../compareItems.js'
+    import { createEventDispatcher } from 'svelte';
+
 	export let name;
     export let priorisation;
-
-    import { createEventDispatcher } from 'svelte';
 
     const dispatch = createEventDispatcher();
 
     function dispatchPriorisationChanged(newPriorisation){
+        newPriorisation.sort(compareItems)
+        console.log('newPriorisation', newPriorisation)
         dispatch('priorisation-change', newPriorisation)
     }
 
-    function addItemToPriorisation(item){
-        const maxWeight = Math.max(...priorisation.map(({weight}) => weight || 0))
-        item.weight = maxWeight + 1;
+    function getMaxWeight(){
+        return Math.max(...priorisation.map(({weight}) => weight || 0))
+    }
 
-        priorisation.sort((item1, item2) => {
-            return (item1.weight || Infinity) - (item2.weight || Infinity)
-        })
+    function addItemToPriorisation(item){
+        const maxWeight = getMaxWeight()
+        item.weight = maxWeight + 1;
+        item.previousWeight = item.weight;
+
+        dispatchPriorisationChanged(priorisation)
+    }
+
+    function weightChange(item){
+        console.log('item', item, item.weight, item.previousWeight)
+
+        // is there an existing item with this weight already?
+        const otherItemWithNewWeight = priorisation.find((i) => i !== item && i.weight === item.weight)
+        if(otherItemWithNewWeight){
+            if(otherItemWithNewWeight.weight < item.previousWeight){
+                const itemsToAdjust = priorisation.filter(i => i !== item && i.weight >= otherItemWithNewWeight.weight && i.weight < item.previousWeight)
+                console.log('itemsToAdjust', itemsToAdjust, otherItemWithNewWeight.weight, item.previousWeight)
+                for(const it of itemsToAdjust){
+                    it.weight = it.weight + 1
+                    it.previousWeight = it.weight
+                }
+            }
+            else{
+                const itemsToAdjust = priorisation.filter(i => i !== item && i.weight <= otherItemWithNewWeight.weight && i.weight > item.previousWeight)
+                for(const it of itemsToAdjust){
+                    it.weight = it.weight - 1
+                    it.previousWeight = it.weight
+                }
+            }
+        }
         
+        item.previousWeight = item.weight
+
         dispatchPriorisationChanged(priorisation)
     }
 
@@ -33,7 +65,7 @@
             <span class="weight">
                 weight: 
                 {#if item.weight}
-                    <input type="number" step="1" min="1" value={item.weight}>    
+                    <input type="number" step="1" min="1" bind:value={item.weight} on:input={() => weightChange(item)}>
                 {:else}
                     <button on:click={() => addItemToPriorisation(item)} >Ajouter</button>
                 {/if}
