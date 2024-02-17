@@ -5,11 +5,11 @@
 <section>
     <h2>Priorisation collective</h2>
     <ol>
-        {#each priorizedList as {item: {text}, weight}}
+        {#each priorizedList as {item: {text}, weights}}
         <li>
             <span>{text}</span>
-            {#if weight !== Infinity}
-                <span class="weight">weight: {weight}</span>
+            {#if weights.some(w => w !== Infinity)}
+                <span class="weight">weight: {weights.filter(w => w !== Infinity).sort((a, b) => a - b).join(', ')}</span>
             {/if}
         </li>
         {/each}

@@ -1,34 +1,48 @@
 <script>
     //@ts-check
+	import {sum} from 'd3-array'
+	
 	import Priorisation from './components/Priorisation.svelte'
 	import PriorizedList from './components/PriorizedList.svelte'
 
-    import compareItems from './compareWeighted.js'
-	
-	/** @type { {id: string, text: string}[] }*/
+
+	/** @typedef {{id: string, text: string}} Item */
+
+	/** @type { Item[] }*/
 	export let items
-	/** @type {Map<string, Map<{id: string, text: string}, number>>}*/
+	/** @type {Map<string, Map<Item, number>>}*/
 	export let priorisationByPerson;
 
 	$: priorizedList = computePriorizedList(priorisationByPerson)
 
 	function computePriorizedList(priorisationByPerson){
-		const weightByItem = new Map()
+		/** @type {Map<Item, number[]>} */
+		const weightsByItem = new Map()
 
 		for(const weightedItems of priorisationByPerson.values()){
 			for(const [item, weight] of weightedItems){
-				let cumulWeight = weightByItem.get(item) || 0
+				let allWeights = weightsByItem.get(item) || []
 
-				weightByItem.set(
+				weightsByItem.set(
 					item, 
-					cumulWeight + (weight || Infinity)
+					allWeights.concat([weight || Infinity])
 				)
 			}
 		}
 
-		return [...weightByItem]
-			.map(([item, weight]) => ({item, weight})) 
-			.sort(compareItems)
+		return [...weightsByItem]
+			.map(([item, weights]) => ({item, weights})) 
+			.sort(({weights: ws1}, {weights: ws2}) => {
+				const infinity1 = ws1.filter(w => w === Infinity).length
+				const infinity2 = ws2.filter(w => w === Infinity).length
+
+				if(infinity1 !== infinity2){
+					return infinity1 - infinity2
+				}
+				else{
+					sum(ws1.filter(w => w !== Infinity)) - sum(ws2.filter(w => w !== Infinity)) 
+				}
+			})
 	}
 
 	function changePriorisation(name, {detail: newPriorisation}){
