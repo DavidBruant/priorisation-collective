@@ -10,8 +10,7 @@ const items = emojo.map((em, i) => Object.freeze({
 const app = new App({
 	target: document.querySelector('main'),
 	props: {
-		priorisationByPerson: new Map([
-			['David', new Map(items.map(item => [item, undefined]))]
-		])
+		items,
+		priorisationByPerson: new Map()
 	}
 });
