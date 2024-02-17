@@ -1,9 +1,36 @@
 <script>
+    //@ts-check
 	import Priorisation from './components/Priorisation.svelte'
 	import PriorizedList from './components/PriorizedList.svelte'
 
-	export let priorizedList;
+    import compareItems from './compareWeighted.js'
+
+
+	/** @type {Map<string, Map<{id: string, text: string}, number>>}*/
 	export let priorisationByPerson;
+
+	$: priorizedList = computePriorizedList(priorisationByPerson)
+
+	function computePriorizedList(priorisationByPerson){
+		console.log('computePriorizedList', priorisationByPerson)
+
+		const weightByItem = new Map()
+
+		for(const weightedItems of priorisationByPerson.values()){
+			for(const [item, weight] of weightedItems){
+				let cumulWeight = weightByItem.get(item) || 0
+
+				weightByItem.set(
+					item, 
+					cumulWeight + (weight || Infinity)
+				)
+			}
+		}
+
+		return [...weightByItem]
+			.map(([item, weight]) => ({item, weight})) 
+			.sort(compareItems)
+	}
 
 	function changePriorisation(name, {detail: newPriorisation}){
 		priorisationByPerson.set(name, newPriorisation)
@@ -18,7 +45,7 @@
 	<section>
 		<h2>Priorisation par personne</h2>
 		{#each [...priorisationByPerson] as [name, priorisation]}
-			<Priorisation {name} {priorisation} on:priorisation-change={newPrio => changePriorisation(name, newPrio)}/>
+			<Priorisation {name} weightByItem={priorisation} on:priorisation-change={newPrio => changePriorisation(name, newPrio)}/>
 		{/each}
 	</section>
 </section>

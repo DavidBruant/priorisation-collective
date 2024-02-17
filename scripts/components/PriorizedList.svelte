@@ -5,10 +5,12 @@
 <section>
     <h2>Priorisation collective</h2>
     <ol>
-        {#each priorizedList as {text, weight}}
+        {#each priorizedList as {item: {text}, weight}}
         <li>
             <span>{text}</span>
-            <span class="weight">weight: {weight}</span>
+            {#if weight !== Infinity}
+                <span class="weight">weight: {weight}</span>
+            {/if}
         </li>
         {/each}
     </ol>
