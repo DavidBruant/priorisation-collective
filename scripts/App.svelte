@@ -12,8 +12,6 @@
 	$: priorizedList = computePriorizedList(priorisationByPerson)
 
 	function computePriorizedList(priorisationByPerson){
-		console.log('computePriorizedList', priorisationByPerson)
-
 		const weightByItem = new Map()
 
 		for(const weightedItems of priorisationByPerson.values()){

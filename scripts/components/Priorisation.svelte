@@ -41,11 +41,9 @@
     function weightChange(weightedItem, newWeight){
         const {item, previousWeight} = weightedItem
 
-        throw `there is an off-by-one somewhere`
-
         weightedItem.weight = newWeight
         // is there an existing item with this weight already?
-        const otherItemWithNewWeight = priorisationArray.find(({item: i}) => i !== item && weightByItem.get(i) === weightByItem.get(item))?.item
+        const otherItemWithNewWeight = priorisationArray.find(({item: i}) => i !== item && weightByItem.get(i) === newWeight)?.item
         if(otherItemWithNewWeight){
             if(weightByItem.get(otherItemWithNewWeight) < previousWeight){
                 const weightedItemsToAdjust = priorisationArray.filter(({item: i}) => i !== item && weightByItem.get(i) >= weightByItem.get(otherItemWithNewWeight) && weightByItem.get(i) < previousWeight)
@@ -76,13 +74,16 @@
     <h3>{name}</h3>
 
     <ol>
-        {#each priorisationArray as weightedItem (weightByItem.item)}
+        {#each priorisationArray as weightedItem (weightedItem.item)}
         <li>
             <span>{weightedItem.item.text}</span>
             <span class="weight">
                 weight: 
                 {#if weightedItem.weight}
-                    <input type="number" step="1" min="1" value={weightedItem.weight} on:input={e => weightChange(weightedItem, Number(e.target.value))}>
+                    <input type="number" 
+                        step="1" min="1" 
+                        value={weightedItem.weight} 
+                        on:input={e => weightChange(weightedItem, Number(e.target.value))}>
                 {:else}
                     <button on:click={() => addItemToPriorisation(weightedItem)} >Ajouter</button>
                 {/if}
